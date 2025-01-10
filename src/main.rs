@@ -77,8 +77,8 @@ impl Plugin {
             loop {
                 match rx.recv().unwrap() {
                     Ok(event) => {
-                        if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
-                            println!("Relevant modification detected, reloading plugin...");
+                        if let EventKind::Modify(_) = event.kind {
+                            println!("Relevant modification detected, reloading plugin... event {:?}", event);
                             thread::sleep(std::time::Duration::from_secs(1));
                             self_clone.reload_plugin();
                         }
