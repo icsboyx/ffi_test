@@ -1,5 +1,5 @@
 // src/lib.rs
-static SOMETHING_TO_CHANGE: &str = "+++--++";
+static SOMETHING_TO_CHANGE: &str = "+++--dddddddddeeeeddddd**++";
 
 #[unsafe(no_mangle)]
 pub extern "C" fn plugin_function(payload: &str) -> String {
@@ -10,7 +10,6 @@ pub extern "C" fn plugin_function(payload: &str) -> String {
         SOMETHING_TO_CHANGE,
         payload
     );
-    println!("{}. {}", SOMETHING_TO_CHANGE, ret_val);
     ret_val
 }
 
