@@ -71,14 +71,14 @@ impl Plugin {
     pub fn start_watcher(&self) {
         let (tx, rx) = channel();
         let mut watcher = notify::recommended_watcher(tx).unwrap();
-        watcher
-            .watch(Path::new(&self.path), RecursiveMode::NonRecursive)
-            .unwrap();
 
         println!("Watching for changes in {:#?}", watcher);
 
         let self_clone = self.clone();
         thread::spawn(move || {
+            watcher
+                .watch(Path::new(&self_clone.path), RecursiveMode::NonRecursive)
+                .unwrap();
             loop {
                 match rx.recv().unwrap() {
                     Ok(event) => {
@@ -97,6 +97,7 @@ fn main() {
     plugin.start_watcher();
     // Main application logic
     loop {
+        println!("Plugin : {:#?}", plugin);
         if let Some(result) = plugin.call_plugin_function("Hello from Rust!") {
             println!("Plugin function result: {}", result);
         }
