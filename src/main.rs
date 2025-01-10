@@ -41,10 +41,10 @@ pub struct Plugin {
 
 impl Plugin {
     pub fn load(lib_path: impl AsRef<str>) -> Self {
-        let lib = PluginLib::new(&lib_path).clone();
-
+        let lib = PluginLib::new(&lib_path);
+        let lib_arc = Arc::new(RwLock::new(lib));
         Self {
-            plugin: Arc::new(RwLock::new(lib)),
+            plugin: lib_arc.clone(),
             path: lib_path.as_ref().to_string(),
         }
     }
