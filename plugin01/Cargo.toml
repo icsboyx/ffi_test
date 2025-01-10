@@ -1,0 +1,11 @@
+[package]
+name = "plugin01"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[lib]
+name = "plugin01"          # The library name (e.g., libplugin01.so or libplugin01.dll)
+crate-type = ["cdylib"]
+
