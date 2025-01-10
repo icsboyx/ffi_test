@@ -5,7 +5,7 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 
 use libloading::{Library, Symbol};
-use notify::event::ModifyKind;
+use notify::event::{DataChange, ModifyKind};
 use notify::{Event, EventKind, RecursiveMode, Watcher, event};
 
 #[derive(Debug, Clone)]
@@ -77,12 +77,11 @@ impl Plugin {
             loop {
                 match rx.recv().unwrap() {
                     Ok(event) => {
-                        if event.kind != EventKind::Modify(ModifyKind::Metadata(event::MetadataKind::Any)) {
-                            continue;
+                        if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
+                            println!("Relevant modification detected, reloading plugin...");
+                            thread::sleep(std::time::Duration::from_secs(1));
+                            self_clone.reload_plugin();
                         }
-                        println!("Reloading plugin... Event {:?}", event);
-                        thread::sleep(std::time::Duration::from_secs(1));
-                        self_clone.reload_plugin();
                     }
                     _ => {}
                 }
@@ -91,7 +90,7 @@ impl Plugin {
     }
 }
 fn main() {
-    let plugin_path = "./plugins/libplugin01.so";
+    let plugin_path = "plugin01/target/release/libplugin01.so";
     let plugin = Plugin::load(plugin_path);
     plugin.start_watcher();
     // Main application logic
