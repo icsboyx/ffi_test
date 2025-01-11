@@ -1,4 +1,3 @@
-use std::any::Any;
 use std::path::Path;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, RwLock};
@@ -6,7 +5,7 @@ use std::thread;
 
 use libloading::{Library, Symbol};
 use notify::event::{DataChange, ModifyKind};
-use notify::{Event, EventKind, RecursiveMode, Watcher, event};
+use notify::{EventKind, RecursiveMode, Watcher};
 
 #[derive(Debug)]
 
@@ -93,7 +92,6 @@ impl Plugin {
                     Ok(event) => {
                         if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
                             println!("Relevant modification detected, reloading plugin... event {:?}", event);
-                            thread::sleep(std::time::Duration::from_secs(1));
                             self_clone.reload_plugin();
                         }
                     }
@@ -105,13 +103,31 @@ impl Plugin {
 }
 fn main() {
     let plugin_path = "plugin01/target/release/libplugin01.so";
-    let plugin = Plugin::load(plugin_path);
+    let plugin = Arc::new(Plugin::load(plugin_path));
     plugin.start_watcher();
+    let mut jh_vec = vec![];
     // Main application logic
-    loop {
-        if let Some(result) = plugin.call_plugin_function("Hello from Rust!") {
-            println!("Plugin function result: {}", result);
+
+    let plugin_inner = plugin.clone();
+    jh_vec.push(thread::spawn(move || {
+        loop {
+            let result = plugin_inner.call_plugin_function("Hello from Rust!");
+            println!("Plugin function result: {:?}", result);
+            let _ = thread::sleep(std::time::Duration::from_secs(5));
         }
-        thread::sleep(std::time::Duration::from_secs(5));
+    }));
+
+    let plugin_inner = plugin.clone();
+    jh_vec.push(thread::spawn(move || {
+        let plugin = plugin_inner.clone();
+        loop {
+            thread::sleep(std::time::Duration::from_secs(10));
+            println!("Manually reloading plugin... after 10 sec");
+            plugin.reload_plugin();
+        }
+    }));
+
+    for jh in jh_vec {
+        jh.join().unwrap();
     }
 }
