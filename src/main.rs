@@ -34,6 +34,7 @@ impl PluginLib {
     pub fn close(&mut self) {
         println!("Closing plugin library");
         self.0.take().unwrap().close().unwrap();
+        Self { 0: None };
     }
 }
 
@@ -61,12 +62,20 @@ impl Plugin {
 
     pub fn reload_plugin(&self) {
         println!("Calling reloaded plugin function",);
+
+        println!("{}", "#".repeat(100));
         let lib = PluginLib::new(&self.path);
+        println!("Testing new plugin function");
+        let plugin_function = lib.get_plugin_function().unwrap();
+        let result = unsafe { plugin_function("Hello from Rust!") };
+        println!("New plugin function result: {}", result);
+        println!("{}", "#".repeat(100));
+
         println!("calling plugin function");
         self.plugin.write().unwrap().close();
-        println!("assigning new plugin");
-
         assert!(self.plugin.write().unwrap().0.is_none());
+
+        println!("assigning new plugin");
         self.plugin.write().unwrap().0 = lib.0;
         assert!(self.plugin.write().unwrap().0.is_some());
     }
@@ -82,7 +91,7 @@ impl Plugin {
             loop {
                 match rx.recv().unwrap() {
                     Ok(event) => {
-                        if let EventKind::Modify(_) = event.kind {
+                        if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
                             println!("Relevant modification detected, reloading plugin... event {:?}", event);
                             thread::sleep(std::time::Duration::from_secs(1));
                             self_clone.reload_plugin();
