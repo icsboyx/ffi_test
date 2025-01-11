@@ -8,16 +8,15 @@ use libloading::{Library, Symbol};
 use notify::event::{DataChange, ModifyKind};
 use notify::{Event, EventKind, RecursiveMode, Watcher, event};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 
-pub struct PluginLib(Arc<Option<Library>>);
+pub struct PluginLib(Option<Library>);
 
 impl PluginLib {
     pub fn new(path: impl AsRef<str>) -> Self {
-        let lib = Arc::new(Some(unsafe {
-            Library::new(path.as_ref()).expect("Failed to load library")
-        }));
-        Self(lib.clone())
+        Self {
+            0: Some(unsafe { Library::new(path.as_ref()).unwrap() }),
+        }
     }
 
     pub fn get_plugin_function(&self) -> Option<unsafe fn(&str) -> String> {
@@ -30,6 +29,11 @@ impl PluginLib {
         } else {
             None
         }
+    }
+
+    pub fn close(&mut self) {
+        println!("Closing plugin library");
+        self.0.take().unwrap().close().unwrap();
     }
 }
 
@@ -56,14 +60,15 @@ impl Plugin {
     }
 
     pub fn reload_plugin(&self) {
-        let lib = PluginLib::new(&self.path).clone();
-        unsafe {
-            println!(
-                "Calling reloaded plugin function {:?}",
-                lib.get_plugin_function().unwrap()("Reloaded from Rust!")
-            );
-        }
+        println!("Calling reloaded plugin function",);
+        let lib = PluginLib::new(&self.path);
+        println!("calling plugin function");
+        self.plugin.write().unwrap().close();
+        println!("assigning new plugin");
+
+        assert!(self.plugin.write().unwrap().0.is_none());
         self.plugin.write().unwrap().0 = lib.0;
+        assert!(self.plugin.write().unwrap().0.is_some());
     }
 
     pub fn start_watcher(&self) {
