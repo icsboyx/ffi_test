@@ -10,6 +10,7 @@ Reload on change now is working.
 
 - I'm using `notify` to monitor the file for changes.
   -- it is not working as expected. i only get, access, metadata modified, evens on lib rebuild.
+
   ```shell
   Event: Event {
   kind: Modify(
@@ -55,14 +56,15 @@ Reload on change now is working.
   }
   ```
 
-````
-    I expect to get the following event when I rebuild the library.
+      I expect to get the following event when I rebuild the library.
 
   ```Rust
-if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
+  if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
                             println!("Relevant modification detected, reloading plugin... event {:?}", event);
                             self_clone.reload_plugin();
                         }
+  ```
+
 ````
 
 ## Current Status
@@ -73,3 +75,4 @@ Contributions and feedback are welcome.
 ```
 
 ```
+````
