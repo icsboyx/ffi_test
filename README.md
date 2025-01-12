@@ -58,7 +58,7 @@ Reload on change now is working.
 ````
     I expect to get the following event when I rebuild the library.
 
-```Rust
+  ```Rust
 if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
                             println!("Relevant modification detected, reloading plugin... event {:?}", event);
                             self_clone.reload_plugin();
