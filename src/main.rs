@@ -62,18 +62,24 @@ impl Plugin {
     pub fn reload_plugin(&self) {
         println!("Calling reloaded plugin function",);
 
-        println!("{}", "#".repeat(100));
-        let lib = PluginLib::new(&self.path);
-        println!("Testing new plugin function");
-        let plugin_function = lib.get_plugin_function().unwrap();
-        let result = unsafe { plugin_function("Hello from Rust!") };
-        println!("New plugin function result: {}", result);
-        println!("{}", "#".repeat(100));
-
+        // Close current plugin
         println!("calling plugin function");
         self.plugin.write().unwrap().close();
         assert!(self.plugin.write().unwrap().0.is_none());
 
+        // Load new plugin
+        println!("{}", "#".repeat(100));
+
+        let lib = PluginLib::new(&self.path);
+        println!("Testing new plugin function");
+
+        let plugin_function = lib.get_plugin_function().unwrap();
+        let result = unsafe { plugin_function("Hello from Rust!") };
+
+        println!("New plugin function result: {}", result);
+        println!("{}", "#".repeat(100));
+
+        // Assign new plugin
         println!("assigning new plugin");
         self.plugin.write().unwrap().0 = lib.0;
         assert!(self.plugin.write().unwrap().0.is_some());
@@ -90,6 +96,7 @@ impl Plugin {
             loop {
                 match rx.recv().unwrap() {
                     Ok(event) => {
+                        println!("Event: {:#?}", event);
                         if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
                             println!("Relevant modification detected, reloading plugin... event {:?}", event);
                             self_clone.reload_plugin();
@@ -117,15 +124,15 @@ fn main() {
         }
     }));
 
-    let plugin_inner = plugin.clone();
-    jh_vec.push(thread::spawn(move || {
-        let plugin = plugin_inner.clone();
-        loop {
-            thread::sleep(std::time::Duration::from_secs(10));
-            println!("Manually reloading plugin... after 10 sec");
-            plugin.reload_plugin();
-        }
-    }));
+    // let plugin_inner = plugin.clone();
+    // jh_vec.push(thread::spawn(move || {
+    //     let plugin = plugin_inner.clone();
+    //     loop {
+    //         thread::sleep(std::time::Duration::from_secs(10));
+    //         println!("Manually reloading plugin... after 10 sec");
+    //         plugin.reload_plugin();
+    //     }
+    // }));
 
     for jh in jh_vec {
         jh.join().unwrap();
