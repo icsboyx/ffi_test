@@ -69,11 +69,3 @@ Reload on change now is working.
 
 The project is currently a work in progress.
 Contributions and feedback are welcome.
-
-```
-
-```
-
-```
-
-```
