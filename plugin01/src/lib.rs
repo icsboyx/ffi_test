@@ -1,4 +1,4 @@
-static SOMETHING_TO_CHANGE: &str = "=";
+static SOMETHING_TO_CHANGE: &str = "=dd";
 // src/lib.rs
 
 #[unsafe(no_mangle)]

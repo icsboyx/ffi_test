@@ -113,29 +113,7 @@ impl Plugin {
                 thread::sleep(std::time::Duration::from_secs(1));
             }
         });
-        // let self_clone = self.clone();
-        // let mut inotify = Inotify::init().expect("Error while initializing inotify instance");
-        // inotify
-        //     .watches()
-        //     .add(&self.path, WatchMask::ALL_EVENTS)
-        //     .expect("Failed to add file watch");
 
-        // thread::spawn(move || {
-        //     loop {
-        //         let mut buffer = [0u8; 4096];
-        //         let events = inotify
-        //             .read_events_blocking(&mut buffer)
-        //             .expect("Error while reading events");
-
-        //         for event in events {
-        //             println!("Event: {:?}", event);
-        //             if event.mask.contains(EventMask::CLOSE_WRITE) {
-        //                 println!("Relevant modification detected, reloading plugin... event {:?}", event);
-        //                 self_clone.reload_plugin();
-        //             }
-        //         }
-        //     }
-        // });
         // thread::spawn(move || {
         //     watcher
         //         .watch(Path::new(&self_clone.path), RecursiveMode::NonRecursive)
@@ -154,11 +132,39 @@ impl Plugin {
         //     }
         // });
     }
+
+    pub fn test_watcher(&self) {
+        // let self_clone = self.clone();
+        let mut inotify = Inotify::init().expect("Error while initializing inotify instance");
+        inotify
+            .watches()
+            .add("plugin01/target/release", WatchMask::ALL_EVENTS)
+            .expect("Failed to add file watch");
+
+        thread::spawn(move || {
+            loop {
+                let mut buffer = [0u8; 4096];
+                let events = inotify
+                    .read_events_blocking(&mut buffer)
+                    .expect("Error while reading events");
+
+                for event in events {
+                    println!("Event: {:?}", event);
+                    if event.mask.contains(EventMask::CLOSE_WRITE) {
+                        println!("Relevant modification detected, reloading plugin... event {:?}", event);
+                        // self_clone.reload_plugin();
+                    }
+                }
+            }
+        });
+    }
 }
 fn main() {
     let plugin_path = "plugin01/target/release/libplugin01.so";
     let plugin = Arc::new(Plugin::load(plugin_path));
-    plugin.start_watcher();
+
+    plugin.test_watcher();
+
     let mut jh_vec = vec![];
     // Main application logic
 
