@@ -1,4 +1,4 @@
-static SOMETHING_TO_CHANGE: &str = "===ee";
+static SOMETHING_TO_CHANGE: &str = "=";
 // src/lib.rs
 
 #[unsafe(no_mangle)]
