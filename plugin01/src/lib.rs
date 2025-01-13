@@ -1,5 +1,5 @@
+static SOMETHING_TO_CHANGE: &str = "===ee";
 // src/lib.rs
-static SOMETHING_TO_CHANGE: &str = "=====";
 
 #[unsafe(no_mangle)]
 pub extern "Rust" fn plugin_function(payload: &str) -> String {
