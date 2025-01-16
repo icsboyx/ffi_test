@@ -1,6 +1,4 @@
-use std::io::{BufRead, Read};
-use std::path::Path;
-use std::sync::mpsc::channel;
+use std::io::Read;
 use std::sync::{Arc, RwLock};
 use std::thread;
 
@@ -113,24 +111,6 @@ impl Plugin {
                 thread::sleep(std::time::Duration::from_secs(1));
             }
         });
-
-        // thread::spawn(move || {
-        //     watcher
-        //         .watch(Path::new(&self_clone.path), RecursiveMode::NonRecursive)
-        //         .unwrap();
-        //     loop {
-        //         match rx.recv().unwrap() {
-        //             Ok(event) => {
-        //                 println!("Event: {:#?}", event);
-        //                 if let EventKind::Modify(ModifyKind::Data(DataChange::Content)) = event.kind {
-        //                     println!("Relevant modification detected, reloading plugin... event {:?}", event);
-        //                     self_clone.reload_plugin();
-        //                 }
-        //             }
-        //             _ => {}
-        //         }
-        //     }
-        // });
     }
 
     pub fn test_watcher(&self) {
@@ -138,7 +118,7 @@ impl Plugin {
         let mut inotify = Inotify::init().expect("Error while initializing inotify instance");
         inotify
             .watches()
-            .add("plugin01/target/release", WatchMask::ALL_EVENTS)
+            .add("plugins", WatchMask::ALL_EVENTS)
             .expect("Failed to add file watch");
 
         thread::spawn(move || {
