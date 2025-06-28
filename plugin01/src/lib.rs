@@ -1,10 +1,10 @@
-static SOMETHING_TO_CHANGE: &str = "=dddddff";
+static SOMETHING_TO_CHANGE: &str = "00000";
 // src/lib.rs
 
 #[unsafe(no_mangle)]
 pub extern "Rust" fn plugin_function(payload: &str) -> String {
     let ret_val = format!(
-        "Plugin {}:{} argument passed: {}{}",
+        "Plugin {}:{} argument passed: {} {}",
         file!(),
         module_path!().to_string(),
         SOMETHING_TO_CHANGE,
