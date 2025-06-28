@@ -1,48 +1,49 @@
 # FFI Test Project
 
-I'm trying to learn how to use the FFI in Rust. This project is a test project to help me learn how to use the FFI.
-I'm loading a shared library libplugin01.so and monitoring if it change.
-On change detect I'm reloading the library and calling the function in the library.
+This project demonstrates how to use FFI (Foreign Function Interface) in Rust by dynamically loading and calling functions from a shared library (`libplugin01.so`). It also features automatic reloading of the library when changes are detected.
 
-## Work In Progress
+## Features
 
-Reload on change now is working.
+- Loads a shared library at runtime using `libloading`.
+- Monitors the plugin directory for changes using `inotify`.
+- Uses SHA256 to check if the library has changed (simple but effective for now).
+- Automatically reloads the library and calls its function when a change is detected.
+- Prints events and reload status to the console for debugging and learning purposes.
 
-using sha256 to check if the library has changed.
-(not the best way to check if the library has changed, but it's working for now)
+## How It Works
 
-testing inotify I found that you can't really monitor a file that is being written to. So I'm monitoring the directory instead.
+1. The main Rust application loads `libplugin01.so` and calls a function from it.
+2. It monitors the plugin directory (not the file itself) for changes, since inotify cannot reliably watch files being written.
+3. When a relevant event (like `CLOSE_WRITE`, `DELETE`, or `CREATE`) is detected, the application reloads the library and calls the function again.
+4. SHA256 is used to check if the library content has actually changed before reloading.
 
-```Rust
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(OPEN), cookie: 0, name: Some(".cargo-lock") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(OPEN | ISDIR), cookie: 0, name: Some("deps") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(ACCESS | ISDIR), cookie: 0, name: Some("deps") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_NOWRITE | ISDIR), cookie: 0, name: Some("deps") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(OPEN), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_NOWRITE), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(DELETE), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CREATE), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(OPEN), cookie: 0, name: Some("libplugin01.d") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(ACCESS), cookie: 0, name: Some("libplugin01.d") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_NOWRITE), cookie: 0, name: Some("libplugin01.d") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_WRITE), cookie: 0, name: Some(".cargo-lock") }
+## Example Output
+
+```text
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
 Relevant modification detected, reloading plugin... event Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_WRITE), cookie: 0, name: Some(".cargo-lock") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(OPEN), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(ACCESS), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_NOWRITE), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(OPEN), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(ACCESS), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CLOSE_NOWRITE), cookie: 0, name: Some("libplugin01.so") }
+Calling reloaded plugin function
+calling plugin function
+Closing plugin library
+####################################################################################################
+Testing new plugin function
+New plugin function result: Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!
+####################################################################################################
+assigning new plugin
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
 ```
 
-Now I can see the file is deleted and created again, but I can't see the file being written to.
+## Notes
 
-```Rust
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(DELETE), cookie: 0, name: Some("libplugin01.so") }
-Event: Event { wd: WatchDescriptor { id: 1, fd: (Weak) }, mask: EventMask(CREATE), cookie: 0, name: Some("libplugin01.so") }
-```
+- Monitoring the directory is more reliable than monitoring the file itself when using inotify.
+- SHA256 is used for simplicity; more robust solutions are possible.
+- This project is a work in progress and intended for learning and experimentation.
 
-## Current Status
+## Contributing
 
-The project is currently a work in progress.
 Contributions and feedback are welcome.
