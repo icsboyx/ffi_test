@@ -20,7 +20,7 @@ This project demonstrates how to use FFI (Foreign Function Interface) in Rust by
 ## Example Output
 
 ```text
-Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+
 Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
 Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
 Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
@@ -32,10 +32,12 @@ calling plugin function
 Closing plugin library
 ####################################################################################################
 Testing new plugin function
-New plugin function result: Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!
+New plugin function result: Plugin src/lib.rs:plugin01 argument passed: 11111 Hello from Rust!
 ####################################################################################################
 assigning new plugin
-Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 00000 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 11111 Hello from Rust!")
+Plugin function result: Some("Plugin src/lib.rs:plugin01 argument passed: 11111 Hello from Rust!")
+
 ```
 
 ## Notes
